@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hali ya Malipo - MRASHA WiFi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-6 text-center">
+        <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M12 6a1 1 0 110 2 1 1 0 010-2zm0 4a1 1 0 011 1v4a1 1 0 11-2 0v-4a1 1 0 011-1z"></path>
+            </svg>
+        </div>
+        <h2 class="text-xl font-bold text-gray-800 mb-2">Thibitisha Malipo kwenye Simu</h2>
+        <p class="text-gray-600 text-sm mb-6"><%= message %></p>
+        <div class="bg-gray-50 p-3 rounded-lg text-xs text-gray-500 mb-6">
+            Kumbukumbu ya Muamala: <strong><%= referenceId %></strong>
+        </div>
+        <a href="/" class="inline-block w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition">Rudi Mwanzo</a>
+    </div>
+</body>
+</html>

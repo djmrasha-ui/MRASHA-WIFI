@@ -1,0 +1,217 @@
+const fs = require('fs');
+
+// 1. Update Package Controller na mbinu za Update & Delete
+fs.writeFileSync('controllers/packageController.js', `
+const db = require('../config/db');
+
+global.mockPackages = global.mockPackages || [
+    { id: 1, name: 'Saa 1', price: 500, duration_minutes: 60 },
+    { id: 2, name: 'Siku 1', price: 2000, duration_minutes: 1440 }
+];
+
+exports.getPackages = async (req, res) => {
+    try {
+        const [packages] = await db.query('SELECT * FROM packages ORDER BY created_at DESC');
+        res.render('admin/packages', { packages });
+    } catch (err) {
+        res.render('admin/packages', { packages: global.mockPackages });
+    }
+};
+
+exports.createPackage = async (req, res) => {
+    const { name, price, duration_minutes } = req.body;
+    try {
+        await db.query(
+            'INSERT INTO packages (name, price, duration_minutes) VALUES (?, ?, ?)',
+            [name, parseFloat(price), parseInt(duration_minutes)]
+        );
+        res.redirect('/admin/packages');
+    } catch (err) {
+        global.mockPackages.unshift({
+            id: Date.now(),
+            name,
+            price: parseFloat(price),
+            duration_minutes: parseInt(duration_minutes)
+        });
+        res.redirect('/admin/packages');
+    }
+};
+
+exports.updatePackage = async (req, res) => {
+    const { id } = req.params;
+    const { name, price, duration_minutes } = req.body;
+    try {
+        await db.query(
+            'UPDATE packages SET name = ?, price = ?, duration_minutes = ? WHERE id = ?',
+            [name, parseFloat(price), parseInt(duration_minutes), id]
+        );
+    } catch (err) {
+        const index = global.mockPackages.findIndex(p => p.id == id);
+        if (index !== -1) {
+            global.mockPackages[index] = { id, name, price: parseFloat(price), duration_minutes: parseInt(duration_minutes) };
+        }
+    }
+    res.redirect('/admin/packages');
+};
+
+exports.deletePackage = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.query('DELETE FROM packages WHERE id = ?', [id]);
+    } catch (err) {
+        global.mockPackages = global.mockPackages.filter(p => p.id != id);
+    }
+    res.redirect('/admin/packages');
+};
+`);
+
+// 2. Update Admin Routes
+fs.writeFileSync('routes/adminRoutes.js', `
+const express = require('express');
+const router = express.Router();
+const authController = require('../controllers/authController');
+const packageController = require('../controllers/packageController');
+const portalController = require('../controllers/portalController');
+
+router.get('/login', authController.getLoginPage);
+router.post('/login', authController.postLogin);
+router.get('/dashboard', (req, res) => res.render('admin/dashboard'));
+
+// Package Routes
+router.get('/packages', packageController.getPackages);
+router.post('/packages', packageController.createPackage);
+router.post('/packages/update/:id', packageController.updatePackage);
+router.post('/packages/delete/:id', packageController.deletePackage);
+
+// Voucher Routes
+router.get('/vouchers', (req, res) => res.render('admin/vouchers', { vouchers: [] }));
+
+// Page Builder Routes
+router.get('/page-builder', portalController.getPortalSettings);
+router.post('/page-builder', portalController.updatePortalSettings);
+
+module.exports = router;
+`);
+
+// 3. Update Packages View na Modal za Edit & Delete
+fs.writeFileSync('views/admin/packages.ejs', `
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <title>Vifurushi - MRASHA WiFi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+    <div class="w-64 bg-slate-900 text-white min-h-screen p-6 flex flex-col justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-blue-400 mb-8">MRASHA WiFi</h1>
+            <nav class="space-y-3">
+                <a href="/admin/dashboard" class="block py-2.5 px-4 rounded hover:bg-slate-800">Dashboard</a>
+                <a href="/admin/packages" class="block py-2.5 px-4 rounded bg-blue-600 font-semibold">Vifurushi (Packages)</a>
+                <a href="/admin/vouchers" class="block py-2.5 px-4 rounded hover:bg-slate-800">Vocha (Vouchers)</a>
+                <a href="/admin/page-builder" class="block py-2.5 px-4 rounded hover:bg-slate-800">Page Builder (Portal)</a>
+            </nav>
+        </div>
+        <a href="/admin/login" class="block py-2.5 px-4 rounded text-red-400 hover:bg-slate-800">Ondoka (Logout)</a>
+    </div>
+
+    <div class="flex-1 p-10">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6">Usimamizi wa Vifurushi</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Form ya Kuongeza -->
+            <div class="bg-white p-6 rounded-xl shadow-md lg:col-span-1">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Tengeneza Kifurushi</h3>
+                <form action="/admin/packages" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Jina la Kifurushi</label>
+                        <input type="text" name="name" required class="w-full mt-1 p-2 border rounded-md">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Bei (TZS)</label>
+                        <input type="number" name="price" required class="w-full mt-1 p-2 border rounded-md">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Muda (Dakika)</label>
+                        <input type="number" name="duration_minutes" required class="w-full mt-1 p-2 border rounded-md">
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700">Hifadhi Kifurushi</button>
+                </form>
+            </div>
+
+            <!-- Orodha ya Vifurushi -->
+            <div class="bg-white p-6 rounded-xl shadow-md lg:col-span-2">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Orodha ya Vifurushi</h3>
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-3 text-sm font-semibold text-gray-600">Jina</th>
+                            <th class="p-3 text-sm font-semibold text-gray-600">Bei</th>
+                            <th class="p-3 text-sm font-semibold text-gray-600">Muda</th>
+                            <th class="p-3 text-sm font-semibold text-gray-600 text-center">Kitendo</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <% if (packages && packages.length > 0) { %>
+                            <% packages.forEach(pkg => { %>
+                                <tr>
+                                    <td class="p-3 text-sm font-medium text-gray-800"><%= pkg.name %></td>
+                                    <td class="p-3 text-sm text-gray-600"><%= pkg.price %> TZS</td>
+                                    <td class="p-3 text-sm text-gray-600"><%= pkg.duration_minutes %> Dakika</td>
+                                    <td class="p-3 text-sm text-center space-x-2">
+                                        <button onclick="openEditModal('<%= pkg.id %>', '<%= pkg.name %>', '<%= pkg.price %>', '<%= pkg.duration_minutes %>')" class="px-3 py-1 bg-amber-500 text-white rounded hover:bg-amber-600 text-xs font-semibold">Hariri (Edit)</button>
+                                        <form action="/admin/packages/delete/<%= pkg.id %>" method="POST" class="inline" onsubmit="return confirm('Je, una uhakika unataka kufuta kifurushi hiki?');">
+                                            <button type="submit" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs font-semibold">Futa (Delete)</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr><td colspan="4" class="p-3 text-sm text-gray-500 text-center">Hakuna vifurushi bado.</td></tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal ya Kuedit Kifurushi -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full space-y-4 relative shadow-2xl">
+            <button onclick="closeEditModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            <h3 class="text-xl font-bold text-gray-800">Hariri Kifurushi</h3>
+            <form id="editForm" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Jina la Kifurushi</label>
+                    <input type="text" id="editName" name="name" required class="w-full mt-1 p-2 border rounded-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Bei (TZS)</label>
+                    <input type="number" id="editPrice" name="price" required class="w-full mt-1 p-2 border rounded-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Muda (Dakika)</label>
+                    <input type="number" id="editDuration" name="duration_minutes" required class="w-full mt-1 p-2 border rounded-md">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-amber-500 text-white font-semibold rounded-md hover:bg-amber-600">Hifadhi Mabadiliko</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openEditModal(id, name, price, duration) {
+            document.getElementById('editForm').action = '/admin/packages/update/' + id;
+            document.getElementById('editName').value = name;
+            document.getElementById('editPrice').value = price;
+            document.getElementById('editDuration').value = duration;
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
+`);
+
+console.log('Mfumo wa Edit na Delete umewekwa kikamilifu!');
