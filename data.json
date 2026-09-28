@@ -33,12 +33,32 @@
       "code": "BUY-4970",
       "package": "Kifurushi",
       "is_used": true
+    },
+    {
+      "id": 1790589137795,
+      "code": "BUY-5481",
+      "package": "Siku 7",
+      "is_used": true
+    },
+    {
+      "id": 1790599858227,
+      "code": "BUY-2327",
+      "package": "Saa 1",
+      "is_used": true
+    },
+    {
+      "id": 1790600144612,
+      "code": "MRASHA-6609",
+      "package": "Saa 1",
+      "is_used": true
     }
   ],
   "settings": {
     "site_title": "MRASHA WiFi Hotspot",
     "welcome_text": "Karibu! Ingiza kodi ya vocha yako hapa chini kuanza kutumia internet yenye kasi kubwa.",
     "primary_color": "#2563EB",
-    "support_phone": "+255 700 000 000"
+    "support_phone": "+255 700 000 000",
+    "pesapal_consumer_key": "",
+    "pesapal_consumer_secret": ""
   }
 }
