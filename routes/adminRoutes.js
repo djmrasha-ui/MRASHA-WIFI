@@ -1,40 +1,29 @@
-
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const packageController = require('../controllers/packageController');
-const voucherController = require('../controllers/voucherController');
 const portalController = require('../controllers/portalController');
 
+// Authentication Routes
 router.get('/login', authController.getLoginPage);
 router.post('/login', authController.postLogin);
+
+// Dashboard Route
 router.get('/dashboard', (req, res) => res.render('admin/dashboard'));
 
-// Package Routes
-router.get('/packages', packageController.getPackages);
-router.post('/packages', packageController.createPackage);
-router.post('/packages/update/:id', packageController.updatePackage);
-router.post('/packages/delete/:id', packageController.deletePackage);
+// Packages Routes
+router.get('/packages', packageController.getPackagesPage);
+router.post('/packages/add', packageController.addPackage);
+router.get('/packages/delete/:id', packageController.deletePackage);
 
-// Voucher Routes
-router.get('/vouchers', voucherController.getVouchers);
-router.post('/vouchers/generate', voucherController.generateVouchers);
+// Vouchers Route
+router.get('/vouchers', (req, res) => res.render('admin/vouchers', { vouchers: [] }));
 
-// Page Builder Routes
-router.get('/page-builder', portalController.getPortalSettings);
-router.post('/page-builder', portalController.updatePortalSettings);
+// Routers & Access Points Route
+router.get('/routers', (req, res) => res.render('admin/routers', { routers: [] }));
+
+// Page Builder / Settings Routes
+router.get('/settings', portalController.getPortalSettings || ((req, res) => res.render('admin/settings', { settings: {} })));
+router.post('/settings', portalController.updatePortalSettings || ((req, res) => res.redirect('/admin/settings')));
 
 module.exports = router;
-
-
-router.get('/routers', (req, res) => {
-    res.render('admin/routers');
-});
-
-router.post('/routers/mikrotik', (req, res) => {
-    res.redirect('/admin/routers');
-});
-
-router.post('/routers/omada', (req, res) => {
-    res.redirect('/admin/routers');
-});
