@@ -1,4 +1,6 @@
+const fs = require('fs');
 
+const vouchersHTML = `
 <!DOCTYPE html>
 <html lang="sw">
 <head>
@@ -115,3 +117,7 @@
 
 </body>
 </html>
+`;
+
+fs.writeFileSync('views/admin/vouchers.ejs', vouchersHTML);
+console.log('Ukurasa wa Vocha umerejeshwa kwa kikamilifu!');

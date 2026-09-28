@@ -1,4 +1,7 @@
+const fs = require('fs');
 
+// Weka muonekano mpya wa User Portal wenye vitufe vya kubonyeza na modal ya malipo
+fs.writeFileSync('views/user/portal.ejs', `
 <!DOCTYPE html>
 <html lang="sw">
 <head>
@@ -115,3 +118,58 @@
     </script>
 </body>
 </html>
+`);
+
+// Route ya kushughulikia malipo ya kifurushi
+fs.writeFileSync('routes/userRoutes.js', `
+const express = require('express');
+const router = express.Router();
+const userController = require('../controllers/userController');
+
+router.get('/', userController.getPortalPage);
+router.post('/connect', userController.connectVoucher);
+
+router.post('/buy-package', (req, res) => {
+    const { phone, provider, package_id } = req.body;
+    // Hapa tutaunganisha na Payment Gateway (kama AzamPay / Selcom / Lipa Namba API)
+    res.render('user/portal', { 
+        settings: global.mockSettings, 
+        packages: global.mockPackages || [], 
+        message: 'Ombi la malipo limetumwa kwenye namba ' + phone + '. Weka PIN ya ' + provider.toUpperCase() + ' kukamilisha!', 
+        error: null 
+    });
+});
+
+module.exports = router;
+`);
+
+// Update server.js kutumia userRoutes
+fs.writeFileSync('server.js', `
+const express = require('express');
+const path = require('path');
+require('dotenv').config();
+
+const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Admin Routes
+const adminRoutes = require('./routes/adminRoutes');
+app.use('/admin', adminRoutes);
+
+// User / Captive Portal Routes
+const userRoutes = require('./routes/userRoutes');
+app.use('/', userRoutes);
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(\`Server ina-run kwenye port \${PORT}\`);
+});
+`);
+
+console.log('Vifurushi sasa vinabonyezeka na Mfumo wa Malipo umewekwa!');

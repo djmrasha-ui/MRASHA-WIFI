@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= settings.site_title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4" style="background-color: <%= settings.background_color || '#F3F4F6' %>;">
+
+    <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 text-center space-y-6">
+        
+        <!-- Header -->
+        <h1 class="text-2xl font-extrabold text-gray-800"><%= settings.site_title %></h1>
+        <p class="text-gray-600 text-sm"><%= settings.welcome_text || 'Chagua kifurushi chako uanze kutumia mtandao.' %></p>
+
+        <!-- Tab Selection (Malipo ya Simu VS Vocha) -->
+        <div class="flex border-b text-sm font-bold">
+            <button id="btn-mobile" onclick="switchTab('mobile')" class="w-1/2 py-2 border-b-2 border-blue-600 text-blue-600">Malipo ya Simu</button>
+            <button id="btn-voucher" onclick="switchTab('voucher')" class="w-1/2 py-2 border-b-2 border-transparent text-gray-400 hover:text-gray-600">Weka Vocha</button>
+        </div>
+
+        <!-- 1. Form ya Malipo ya Simu -->
+        <form id="form-mobile" action="/pay" method="POST" class="space-y-4 text-left">
+            <div>
+                <label class="text-xs font-bold uppercase text-gray-400 tracking-wider">Chagua Kifurushi:</label>
+                <div class="space-y-2 mt-2">
+                    <% if (packages && packages.length > 0) { %>
+                        <% packages.forEach((pkg, index) => { %>
+                            <label class="border rounded-2xl p-3.5 flex justify-between items-center bg-gray-50 hover:border-blue-500 cursor-pointer transition">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" name="package_id" value="<%= pkg.id %>" <%= index === 0 ? 'checked' : '' %> class="w-4 h-4 text-blue-600">
+                                    <div>
+                                        <p class="font-bold text-gray-800 text-sm"><%= pkg.name %></p>
+                                        <p class="text-xs text-gray-500">Muda: <%= pkg.duration_minutes >= 60 ? (pkg.duration_minutes/60) + ' Saa' : pkg.duration_minutes + ' Min' %></p>
+                                    </div>
+                                </div>
+                                <span class="font-extrabold text-base text-blue-600">TZS <%= pkg.price %></span>
+                            </label>
+                        <% }); %>
+                    <% } else { %>
+                        <p class="text-sm text-gray-400 text-center py-2">Hakuna vifurushi kwa sasa.</p>
+                    <% } %>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-xs font-bold uppercase text-gray-400 tracking-wider">Namba ya Simu:</label>
+                <input type="text" name="phone_number" placeholder="Mfano: 0712345678" required class="w-full border p-3 mt-1 rounded-xl focus:ring-2 focus:ring-blue-500 text-center font-medium">
+            </div>
+            
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-blue-700 transition" style="background-color: <%= settings.primary_color || '#2563EB' %>;">
+                Lipa na Unganisha WiFi
+            </button>
+        </form>
+
+        <!-- 2. Form ya Vocha -->
+        <form id="form-voucher" action="/voucher/login" method="POST" class="space-y-4 text-left hidden">
+            <div>
+                <label class="text-xs font-bold uppercase text-gray-400 tracking-wider">Ingiza Kodi ya Vocha:</label>
+                <input type="text" name="voucher_code" placeholder="Kodi ya tarakimu 6 (Mfano: 123456)" required class="w-full border p-3.5 mt-1 rounded-xl focus:ring-2 focus:ring-blue-500 text-center font-mono font-bold text-lg tracking-widest uppercase">
+            </div>
+            
+            <button type="submit" class="w-full bg-green-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-green-700 transition">
+                Tumia Vocha Unganisha
+            </button>
+        </form>
+
+        <% if (settings.support_phone) { %>
+            <div class="border-t pt-4 text-xs text-gray-500">
+                Msaada? Piga simu: <span class="font-semibold text-gray-700"><%= settings.support_phone %></span>
+            </div>
+        <% } %>
+
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            const fMobile = document.getElementById('form-mobile');
+            const fVoucher = document.getElementById('form-voucher');
+            const btnMobile = document.getElementById('btn-mobile');
+            const btnVoucher = document.getElementById('btn-voucher');
+
+            if (tab === 'mobile') {
+                fMobile.classList.remove('hidden');
+                fVoucher.classList.add('hidden');
+                btnMobile.className = 'w-1/2 py-2 border-b-2 border-blue-600 text-blue-600 font-bold';
+                btnVoucher.className = 'w-1/2 py-2 border-b-2 border-transparent text-gray-400 hover:text-gray-600';
+            } else {
+                fVoucher.classList.remove('hidden');
+                fMobile.classList.add('hidden');
+                btnVoucher.className = 'w-1/2 py-2 border-b-2 border-blue-600 text-blue-600 font-bold';
+                btnMobile.className = 'w-1/2 py-2 border-b-2 border-transparent text-gray-400 hover:text-gray-600';
+            }
+        }
+    </script>
+
+</body>
+</html>

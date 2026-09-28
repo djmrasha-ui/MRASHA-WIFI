@@ -1,4 +1,6 @@
+const fs = require('fs');
 
+const packagesPageHTML = `
 <!DOCTYPE html>
 <html lang="sw">
 <head>
@@ -80,3 +82,7 @@
 
 </body>
 </html>
+`;
+
+fs.writeFileSync('views/admin/packages.ejs', packagesPageHTML);
+console.log('Page ya packages imesasishwa kikamilifu!');

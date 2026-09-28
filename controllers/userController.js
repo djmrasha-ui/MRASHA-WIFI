@@ -1,5 +1,6 @@
 
 const db = require('../config/db');
+const deviceManager = require('../config/deviceManager');
 
 global.mockSettings = global.mockSettings || {
     site_title: 'MRASHA WiFi Hotspot',
@@ -24,19 +25,29 @@ exports.getPortalPage = async (req, res) => {
 };
 
 exports.connectVoucher = async (req, res) => {
-    const { code } = req.body;
+    const { code, client_mac } = req.body;
     let settings = global.mockSettings;
     let packages = global.mockPackages || [];
 
-    // Tafuta vocha kwenye memory store au db
-    let voucher = (global.mockVouchers || []).find(v => v.code === code.trim().toUpperCase());
+    const voucherCode = code.trim().toUpperCase();
+    let voucher = (global.mockVouchers || []).find(v => v.code === voucherCode);
 
     if (voucher) {
         if (voucher.is_used) {
             return res.render('user/portal', { settings, packages, message: null, error: 'Vocha hii imeshatumika tayari!' });
         }
+        
         voucher.is_used = true;
-        return res.render('user/portal', { settings, packages, message: 'Umefanikiwa kuunganishwa na Internet! Tengeneza muunganisho ufurahie huduma.', error: null });
+
+        // Washa internet kwenye MikroTik, Omada EAP 225/255, au zote kwa pamoja!
+        await deviceManager.activateInternetAccess(voucherCode, voucher.duration_minutes || 60, client_mac || null);
+
+        return res.render('user/portal', { 
+            settings, 
+            packages, 
+            message: 'Umefanikiwa kuunganishwa na Internet! Vocha (' + voucherCode + ') ipo tayari kwenye MikroTik & TP-Link Omada AP.', 
+            error: null 
+        });
     }
 
     res.render('user/portal', { settings, packages, message: null, error: 'Kodi ya vocha siyo sahihi. Tafadhali jaribu tena.' });
