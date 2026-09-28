@@ -1,0 +1,38 @@
+{
+  "packages": [
+    {
+      "id": 1,
+      "name": "Saa 1",
+      "price": 500,
+      "duration": "60 Dakika"
+    },
+    {
+      "id": 2,
+      "name": "Siku 1",
+      "price": 2000,
+      "duration": "1440 Dakika"
+    },
+    {
+      "id": 1790585525713,
+      "name": "Siku 7",
+      "price": 5000,
+      "duration": "10080"
+    }
+  ],
+  "vouchers": [
+    {
+      "id": 1,
+      "code": "MRASHA-5001",
+      "package": "Saa 1",
+      "price": 500,
+      "duration": "60 Dakika",
+      "is_used": false
+    }
+  ],
+  "settings": {
+    "site_title": "MRASHA WiFi Hotspot",
+    "welcome_text": "Karibu! Ingiza kodi ya vocha yako hapa chini kuanza kutumia internet yenye kasi kubwa.",
+    "primary_color": "#2563EB",
+    "support_phone": "+255 700 000 000"
+  }
+}
